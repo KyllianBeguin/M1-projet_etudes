@@ -1,0 +1,13 @@
+version: '3.3'
+services:
+  pipeline-extraction-twitter:
+      build: ./pipelines/extraction-twitter
+      container_name: pipeline-extraction-twitter
+      volumes:
+        - ./pipelines/extraction-twitter/mnt/pipeline-extraction-twitter.py:/tmp/pipeline-extraction-twitter.py
+      command: tail -F anything
+  mongo:
+    image: mongo:7.0-rc
+    container_name: mongo
+    ports:
+      - 27017:27017
