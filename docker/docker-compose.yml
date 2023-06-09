@@ -1,0 +1,8 @@
+version: '3.3'
+services:
+  mongo:
+    image: mongo:7.0-rc
+    container_name: mongo
+    restart: always
+    ports:
+      - 27017:27017
