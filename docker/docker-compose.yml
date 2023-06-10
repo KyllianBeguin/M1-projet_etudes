@@ -3,6 +3,7 @@ services:
   pipeline-extraction-twitter:
       build: ./pipelines/extraction-twitter
       container_name: pipeline-extraction-twitter
+      restart: always
       volumes:
-        - ./pipelines/extraction-twitter/mnt/pipeline-extraction-twitter.py:/tmp/pipeline-extraction-twitter.py
+        - ./pipelines/extraction-twitter/mnt/:/tmp/
       command: tail -F anything
