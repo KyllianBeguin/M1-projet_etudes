@@ -1,24 +1,32 @@
 import pandas as pd
-# import nest_asyncio
 import snscrape.modules.twitter as sntwitter
-from snscrape.base import ScraperException
+from datetime import date
+from datetime import timedelta
 
-query = '#ReformeDesRetraites since:2023-03-01 until:2023-06-09'
-limit = 100
+# Build Query
+date_today = date.today().__str__()
+date_yesterday = date_today + timedelta(days=-1)
+query = '#ReformeDesRetraites since:' + date_yesterday + ' until:' + date_today
 
+# Set limit to 200 Tweets
+limit = 200
+
+# Scraping tweets
 tweets = sntwitter.TwitterSearchScraper(query).get_items()
 
+# Initialize tweets position's value
 index = 0
-df = pd.DataFrame(columns=['Date','Tweet'])
 
+# Initialize the list of dicts
+dict_tweets = {}
+
+# Excavating tweets
 for tweet in tweets:
     if index == limit:
         break
     try:
-        df2 = {'Date': tweet.date, 'Tweet': tweet.rawContent}
+        extract = {'Date': tweet.date, 'Tweet': tweet.rawContent}
     except KeyError:
         continue
-    df = pd.concat([df, pd.DataFrame.from_records([df2])])
+    dict_tweets[index.__str__()] = extract
     index = index + 1
-
-df.to_csv('tweets.csv')
