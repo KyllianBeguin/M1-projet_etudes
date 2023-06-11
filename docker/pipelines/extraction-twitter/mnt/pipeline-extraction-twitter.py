@@ -1,12 +1,17 @@
-import pandas as pd
+# snscrape for Twitter scraping
 import snscrape.modules.twitter as sntwitter
+
+# Datetime to build the query
 from datetime import date
 from datetime import timedelta
 
+# MongoClient to export to MongoDB
+from pymongo import MongoClient
+
 # Build Query
-date_today = date.today().__str__()
+date_today = date.today()
 date_yesterday = date_today + timedelta(days=-1)
-query = '#ReformeDesRetraites since:' + date_yesterday + ' until:' + date_today
+query = '#ReformeDesRetraites since:' + date_yesterday.__str__() + ' until:' + date_today.__str__()
 
 # Set limit to 200 Tweets
 limit = 200
@@ -18,7 +23,7 @@ tweets = sntwitter.TwitterSearchScraper(query).get_items()
 index = 0
 
 # Initialize the list of dicts
-dict_tweets = {}
+list_tweets = []
 
 # Excavating tweets
 for tweet in tweets:
@@ -28,5 +33,20 @@ for tweet in tweets:
         extract = {'Date': tweet.date, 'Tweet': tweet.rawContent}
     except KeyError:
         continue
-    dict_tweets[index.__str__()] = extract
+    list_tweets.append(extract)
     index = index + 1
+
+# Export to mongodb. TweetsDB database, RawDataCollection
+# Connect to host
+host = "mongodb://mongo:27017"
+client = MongoClient(host)
+
+# Access the desired database and collection
+db = client['TweetsDB']
+collection = db['RawDataCollection']
+
+# Insert raw tweets
+collection.insert_many(list_tweets)
+
+# Close the connection
+client.close()
