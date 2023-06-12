@@ -1,15 +1,7 @@
 version: '3.3'
 services:
-  pipeline-extraction-twitter:
-      build: ./pipelines/extraction-twitter
-      container_name: pipeline-extraction-twitter
-      restart: always
-      volumes:
-        - ./pipelines/extraction-twitter/mnt/:/tmp/
-      command: tail -F anything
-  mongo:
-    build: ./mongo
-    container_name: mongo
+  metabase:
+    container_name: metabase
     restart: always
     ports:
-      - 27017:27017
+      - 3000:3000
