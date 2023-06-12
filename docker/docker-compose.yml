@@ -4,5 +4,7 @@ services:
     image: metabase/metabase:v0.46.4
     container_name: metabase
     restart: always
+    volumes:
+      - ./metabase/mnt/:/tmp/
     ports:
       - 3000:3000
