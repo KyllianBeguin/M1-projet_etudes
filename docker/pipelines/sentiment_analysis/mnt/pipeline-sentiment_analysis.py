@@ -60,7 +60,7 @@ def mongo_export(list_tweets):
 
     # Access the desired database and collection
     db = client['TweetsDB']
-    collection = db['RawDataCollection']
+    collection = db['ProcessedTweetsCollection']
 
     # Insert raw tweets
     collection.insert_many(list_tweets)
