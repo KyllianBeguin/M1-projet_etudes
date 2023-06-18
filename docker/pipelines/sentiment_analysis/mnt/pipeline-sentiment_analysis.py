@@ -20,7 +20,7 @@ def get_mongo_raw_tweets() -> list:
     """
 
     # Connextion à mongodb, bdd TweetsDB, Collection RawDataCollection
-    host = "mongodb://localhost:27017"
+    host = "mongodb://mongo:27017"
     client = MongoClient(host)
     db = client['TweetsDB']
     collection = db['RawDataCollection']
@@ -30,8 +30,10 @@ def get_mongo_raw_tweets() -> list:
 
     return raw_tweets
 
-
 def analyze_sentiments(tweets):
+    """
+    DOCUMENTER LA FONCTION
+    """
     afinn = Afinn()
     analyzed_tweets = []
     for tweet in tweets:
@@ -47,15 +49,14 @@ def analyze_sentiments(tweets):
         analyzed_tweets.append(analyzed_tweet)
     return analyzed_tweets
 
-print(get_mongo_raw_tweets())
-
-analyzed_tweets = analyze_sentiments(get_mongo_raw_tweets())
-print(analyzed_tweets)
-
 def mongo_export(list_tweets):
-    # Export to mongodb. TweetsDB database, RawDataCollection
+    """
+    Export vers mongodb. 
+    Base de données : TweetsDB 
+    Collection : RawDataCollection
+    """
     # Connect to host
-    host = "mongodb://localhost:27017"
+    host = "mongodb://mongo:27017"
     client = MongoClient(host)
 
     # Access the desired database and collection
@@ -69,3 +70,10 @@ def mongo_export(list_tweets):
     client.close()
 
     return
+
+# Analyze tweets
+raw_tweets = get_mongo_raw_tweets()
+analyzed_tweets = analyze_sentiments(raw_tweets)
+
+# Run export
+mongo_export(analyzed_tweets)
