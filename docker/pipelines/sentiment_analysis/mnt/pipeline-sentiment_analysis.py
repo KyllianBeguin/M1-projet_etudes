@@ -3,6 +3,8 @@
 from afinn import Afinn
 # Connexion à la base de données
 from pymongo import MongoClient
+# Bibliothèque des dates
+from datetime import datetime
 
 # Zone de création des fonctions
 def get_mongo_raw_tweets() -> list:
@@ -18,7 +20,7 @@ def get_mongo_raw_tweets() -> list:
     """
 
     # Connextion à mongodb, bdd TweetsDB, Collection RawDataCollection
-    host = "mongodb://mongo:27017"
+    host = "mongodb://localhost:27017"
     client = MongoClient(host)
     db = client['TweetsDB']
     collection = db['RawDataCollection']
@@ -29,31 +31,23 @@ def get_mongo_raw_tweets() -> list:
     return raw_tweets
 
 
-def analyse_sentiments_csv(file_path):
-    # Lecture du fichier CSV
-    df = pd.read_csv(file_path)
-    
-    # Récupération des éléments de la 3ème colonne dans une liste
-    colonne3 = df.iloc[:, 2].tolist()
-    
-    # Initialisation de l'analyseur de sentiments AFINN
+def analyze_sentiments(tweets):
     afinn = Afinn()
-    
-    # Analyse des sentiments pour chaque élément de la liste
-    resultats_sentiments = []
-    nb_positifs = 0
-    nb_negatifs = 0
-    nb_neutres = 0
-    
-    for element in colonne3 :
-        score_sentiment = afinn.score(element)
-        resultats_sentiments.append(score_sentiment)
-        
-        if score_sentiment > 0 :
-            nb_positifs += 1
-        elif score_sentiment < 0 :
-            nb_negatifs += 1
-        else:
-            nb_neutres += 1
-    
-    return resultats_sentiments, nb_positifs, nb_negatifs, nb_neutres
+    analyzed_tweets = []
+    for tweet in tweets:
+        text = tweet['Tweet']
+        sentiment_score = afinn.score(text)
+        sentiment = 'Positive' if sentiment_score > 0 else 'Negative' if sentiment_score < 0 else 'Neutral'
+        analyzed_tweet = {
+            '_id': tweet['_id'],
+            'Date': tweet['Date'],
+            'Tweet': text,
+            'Sentiment': sentiment
+        }
+        analyzed_tweets.append(analyzed_tweet)
+    return analyzed_tweets
+
+print(get_mongo_raw_tweets())
+
+analyzed_tweets = analyze_sentiments(get_mongo_raw_tweets())
+print(analyzed_tweets)
