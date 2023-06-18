@@ -51,3 +51,21 @@ print(get_mongo_raw_tweets())
 
 analyzed_tweets = analyze_sentiments(get_mongo_raw_tweets())
 print(analyzed_tweets)
+
+def mongo_export(list_tweets):
+    # Export to mongodb. TweetsDB database, RawDataCollection
+    # Connect to host
+    host = "mongodb://localhost:27017"
+    client = MongoClient(host)
+
+    # Access the desired database and collection
+    db = client['TweetsDB']
+    collection = db['RawDataCollection']
+
+    # Insert raw tweets
+    collection.insert_many(list_tweets)
+
+    # Close the connection
+    client.close()
+
+    return
