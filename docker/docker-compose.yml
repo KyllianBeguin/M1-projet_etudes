@@ -1,6 +1,13 @@
 version: '3.3'
 services:
-
+  metabase:
+    image: metabase/metabase:v0.46.8
+    container_name: metabase
+    restart: always
+    volumes:
+      - ./metabase/mnt/:/tmp/
+    ports:
+      - 3000:3000
   pipeline-sentiment_analysis:
       build: ./pipelines/sentiment_analysis
       container_name: pipeline-sentiment_analysis
@@ -18,7 +25,6 @@ services:
   mongo:
     build: ./mongo
     container_name: mongo
-    restart: always
     ports:
       - 27017:27017
   mongo_seed:
