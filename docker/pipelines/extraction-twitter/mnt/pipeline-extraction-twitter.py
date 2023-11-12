@@ -1,52 +1,48 @@
-# snscrape for Twitter scraping
-import snscrape.modules.twitter as sntwitter
+from typing import Optional
 
-# Datetime to build the query
-from datetime import date
-from datetime import timedelta
+import requests
 
-# MongoClient to export to MongoDB
-from pymongo import MongoClient
 
-# Build Query
-date_today = date.today()
-date_yesterday = date_today + timedelta(days=-1)
-query = '#ReformeDesRetraites since:' + date_yesterday.__str__() + ' until:' + date_today.__str__()
+def do_work(data: dict) -> None:
+    # do actual work with data
+    print(data["date"], "\n", data["text"])
 
-# Set limit to 200 Tweets
-limit = 200
 
-# Scraping tweets
-tweets = sntwitter.TwitterSearchScraper(query).get_items()
-
-# Initialize tweets position's value
-index = 0
-
-# Initialize the list of dicts
-list_tweets = []
-
-# Excavating tweets
-for tweet in tweets:
-    if index == limit:
-        break
+def do_request(tweet_id) -> Optional[dict]:
+    response = requests.get(url=f"https://api.vxtwitter.com/Twitter/status/{tweet_id}")
+    if not response.ok:
+        print("Couldn't get tweet.")
+        return
     try:
-        extract = {'Date': tweet.date, 'Tweet': tweet.rawContent}
-    except KeyError:
-        continue
-    list_tweets.append(extract)
-    index = index + 1
+        do_work(response.json())
+    except requests.JSONDecodeError:
+        print("Couldn't decode response.")
+        return
 
-# Export to mongodb. TweetsDB database, RawDataCollection
-# Connect to host
-host = "mongodb://mongo:27017"
-client = MongoClient(host)
+try:
+	from googlesearch import search
+except ImportError:
+	print("No module named 'google' found")
 
-# Access the desired database and collection
-db = client['TweetsDB']
-collection = db['RawDataCollection']
+# Get last day date
+from datetime import datetime
+from datetime import timedelta
+yesterday = datetime.today() - timedelta(days=1)
 
-# Insert raw tweets
-collection.insert_many(list_tweets)
+# to search
+query = f'"réforme des retraites" site:twitter.com after:{yesterday.strftime("%Y-%m-%d")}'
 
-# Close the connection
-client.close()
+tweet_ids = []
+
+for link in search(query, tld="co.in", num=10, stop=20, pause=2):
+    tweet_url_parts = link.split("/")
+    tweet_id = tweet_url_parts[-1]
+    try :
+        int(tweet_id)
+        tweet_ids.append(tweet_id)
+    except ValueError:
+        pass
+
+for i, tweet_id in enumerate(tweet_ids, start=1):
+    do_request(tweet_id)
+    # print(f"Tweet {i}: {tweet_id}")
