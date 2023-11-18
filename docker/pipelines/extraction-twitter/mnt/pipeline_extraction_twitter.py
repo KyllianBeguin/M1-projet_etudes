@@ -27,9 +27,12 @@ class PipelineExtractionTwitter():
     def __init__(self):
         # To build Query
         self.__query = None
+        # To skip PushToMongo
+        self.__skipMongo = False
 
     # ========================= PART 1 -- TWITTER EXTRACTION ===========================
-    def __buildYesterdayDate(self) -> str:
+    @staticmethod
+    def __buildYesterdayDate() -> str:
         """Returns previous date as a string"""
         yesterday = datetime.today() - timedelta(days=1)
         return yesterday.strftime("%Y-%m-%d")
@@ -40,7 +43,7 @@ class PipelineExtractionTwitter():
         Args:
             topic (str) : The topic to scrap
         """
-        yesterday = self.__buildYesterdayDate()
+        yesterday = self.__buildYesterdayDate
         site = "twitter.com"
         self.__query = (
             f'"{topic}"'
@@ -76,7 +79,8 @@ class PipelineExtractionTwitter():
 
         return tweets_id
 
-    def __getTweetsContent(self, tweets_id : list[str]) -> list[dict]:
+    @staticmethod
+    def __getTweetsContent(tweets_id : list[str]) -> list[dict]:
         """Query api.vxtwitter.com and return date + text of the tweet
 
         Args:
@@ -115,24 +119,29 @@ class PipelineExtractionTwitter():
         # Query Google
         tweets_id = self.__queryGoogle()
 
+        if len(tweets_id) == 0:
+            self.__skipMongo = True
+            return None
+
         # Get Content
         tweets_content = self.__getTweetsContent(tweets_id = tweets_id)
-
         return tweets_content
 
     # =========================== PART 2 -- PUSH TO MONGO ==============================
-    def __connectToMongo() -> MongoClient:
+    def __connectToMongo(self) -> MongoClient:
         """Connect to mongo database"""
         host = "mongodb://mongo:27017"
         client = MongoClient(host)
         return client
 
-    def __accessRawDataCollection(mongoClient : MongoClient):
+    def __accessRawDataCollection(self):
         """Access to the Collection where are raw data"""
+        client = self.__connectToMongo()
         db = client['TweetsDB']
         collection = db['RawDataCollection']
         return collection
 
+    @staticmethod
     def __pushTweetsContent(rawDataCollection, tweets_content : list[dict]):
         """Push the data in the collection
 
@@ -140,7 +149,7 @@ class PipelineExtractionTwitter():
             rawDataCollection (MongoCollection) : Collection where raw tweets are
             tweets_content (list[dict]) : date + text of each tweet
         """
-        collection.insert_many(tweets_content)
+        rawDataCollection.insert_many(tweets_content)
         return None
 
     def RunPushToMongo(self, tweets_content : list[dict]):
@@ -149,11 +158,11 @@ class PipelineExtractionTwitter():
         Args:
             tweets_content (list[dict]) : date + text of each tweet
         """
-        # Connect to Mongo
-        client = self.__connectToMongo()
-
+        # Abort Push if __skipMongo
+        if self.__skipMongo:
+            return False
         # Move to raw data collection
-        collection = self.__accessRawDataCollection(mongoClient = client)
+        collection = self.__accessRawDataCollection()
 
         # Push Tweets in the collection
         self.__pushTweetsContent(
@@ -161,5 +170,5 @@ class PipelineExtractionTwitter():
             , tweets_content = tweets_content
         )
 
-        return None
+        return True
 
