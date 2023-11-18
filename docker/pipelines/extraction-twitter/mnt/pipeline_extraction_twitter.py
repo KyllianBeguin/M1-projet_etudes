@@ -43,7 +43,7 @@ class PipelineExtractionTwitter():
         Args:
             topic (str) : The topic to scrap
         """
-        yesterday = self.__buildYesterdayDate
+        yesterday = self.__buildYesterdayDate()
         site = "twitter.com"
         self.__query = (
             f'"{topic}"'
@@ -76,7 +76,6 @@ class PipelineExtractionTwitter():
                 tweets_id.append(tweet_id)
             except ValueError:
                  pass
-
         return tweets_id
 
     @staticmethod
@@ -101,11 +100,11 @@ class PipelineExtractionTwitter():
                     , "Tweet" : response.json()["text"]
                 }
                 tweets_content.append(content)
+                return tweets_content
             except requests.JSONDecodeError:
                 print("Couldn't decode response.")
-                return None
+                return tweets_content
         
-        return tweets_content
 
     def RunTwitterExtraction(self, topic : str) -> list[dict]:
         """Run the extraction part and return the data
@@ -119,6 +118,7 @@ class PipelineExtractionTwitter():
         # Query Google
         tweets_id = self.__queryGoogle()
 
+        # Skip mongo push if no content
         if len(tweets_id) == 0:
             self.__skipMongo = True
             return None
