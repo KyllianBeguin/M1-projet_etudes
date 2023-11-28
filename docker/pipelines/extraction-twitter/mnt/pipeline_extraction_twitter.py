@@ -1,4 +1,4 @@
-# ======================================= ABOUT ==========================================
+# ====================================== ABOUT =========================================
 """
 Name : Pipeline - Extraction Twitter
 Author : Kyllian BEGUIN
@@ -16,6 +16,9 @@ from googlesearch import search
 
 # To push to Mongo
 from pymongo import MongoClient
+
+# To make the ID
+import base64
 
 # ===================================== PIPELINE =======================================
 class PipelineExtractionTwitter():
@@ -98,13 +101,13 @@ class PipelineExtractionTwitter():
                 content = {
                     "Date" : response.json()["date"]
                     , "Tweet" : response.json()["text"]
+                    , "Twitter_id" : tweet_id
                 }
                 tweets_content.append(content)
                 return tweets_content
             except requests.JSONDecodeError:
                 print("Couldn't decode response.")
                 return tweets_content
-        
 
     def RunTwitterExtraction(self, topic : str) -> list[dict]:
         """Run the extraction part and return the data
@@ -125,6 +128,7 @@ class PipelineExtractionTwitter():
 
         # Get Content
         tweets_content = self.__getTweetsContent(tweets_id = tweets_id)
+
         return tweets_content
 
     # =========================== PART 2 -- PUSH TO MONGO ==============================
@@ -140,6 +144,27 @@ class PipelineExtractionTwitter():
         db = client['TweetsDB']
         collection = db['RawDataCollection']
         return collection
+
+    @staticmethod
+    def __getTwitterIds(rawDataCollection) -> list[str]:
+        """Find every Twitter_id in the collection and return a list of strings"""
+        bson_filter = {
+            "_id" : 0
+            , "Twitter_id" : 1
+        }
+        
+        # No tweets in collection
+        if [element for element in rawDataCollection.find({})] == []:
+            return []
+
+        # Tweets in collection
+        else:
+            tweets_ids = [
+                element["Twitter_id"] 
+                for element
+                in rawDataCollection.find({}, bson_filter)
+            ]
+            return tweets_ids
 
     @staticmethod
     def __pushTweetsContent(rawDataCollection, tweets_content : list[dict]):
@@ -164,11 +189,27 @@ class PipelineExtractionTwitter():
         # Move to raw data collection
         collection = self.__accessRawDataCollection()
 
-        # Push Tweets in the collection
-        self.__pushTweetsContent(
-            rawDataCollection = collection
-            , tweets_content = tweets_content
-        )
+        # Get Twitter ids from raw data collection
+        collection_T_ids = self.__getTwitterIds(collection)
 
-        return True
+        # Look for tweets in raw data collection
+        Tweets_to_push = [
+            tweet
+            for tweet in tweets_content
+            if tweet["Twitter_id"]
+            not in collection_T_ids
+        ]
+
+        # No tweets to push
+        if Tweets_to_push == []:
+            return False
+
+        else:
+            # Push Tweets in the collection
+            self.__pushTweetsContent(
+                rawDataCollection = collection
+                , tweets_content = tweets_content
+            )
+    
+            return True
 
