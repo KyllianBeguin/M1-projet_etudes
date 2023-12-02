@@ -1,1 +1,2 @@
 pymongo==4.3.3
+googlesearch-python==1.2.3
