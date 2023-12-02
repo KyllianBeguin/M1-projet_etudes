@@ -15,8 +15,10 @@ if __name__ == "__main__":
 
     pipeline = PipelineSentimentAnalysis()
     raw_tweets = pipeline.RunGetTweets()
-    logger.info("Extracted tweets from raw data collection")
-
     processed_tweets = pipeline.RunSentimentAnalysis(raw_tweets)
-    logger.info("Performed sentiment analysis")
-    print(processed_tweets)
+    pushed = pipeline.RunPushToMongo(processed_tweets)
+
+    if pushed:
+        logger.info("Finished Sentiment Analysis")
+    else:
+        logger.info("No tweets to push")
