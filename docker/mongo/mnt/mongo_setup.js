@@ -1,5 +1,5 @@
-db = new Mongo().getDB('RawDataDB');
+db = new Mongo().getDB('TwitterSentimentAnalysis');
 
-db.createCollection('RawTweetsCollection');
+db.createCollection('RawTweets');
 
-db.createCollection('ProcessedTweetsCollection');
+db.createCollection('ProcessedTweets');

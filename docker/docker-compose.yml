@@ -47,7 +47,7 @@ services:
     ports:
       - 9000
     environment:
-      - MONGO_URI=mongodb:27017/RawDataDB
+      - MONGO_URI=mongodb:27017/TwitterSentimentAnalysis
     networks:
       - projetm1-network
 
