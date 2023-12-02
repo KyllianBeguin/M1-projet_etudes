@@ -141,8 +141,8 @@ class PipelineExtractionTwitter():
     def __accessRawDataCollection(self):
         """Access to the Collection where are raw data"""
         client = self.__connectToMongo()
-        db = client['TweetsDB']
-        collection = db['RawDataCollection']
+        db = client['TwitterSentimentAnalysis']
+        collection = db['RawTweets']
         return collection
 
     @staticmethod
