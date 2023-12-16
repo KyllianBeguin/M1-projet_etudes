@@ -100,6 +100,9 @@ class PipelineExtractionTwitter():
                     , "Tweet" : response.json()["text"]
                     , "Twitter_id" : tweet_id
                 }
+                content["Date"] = datetime.strptime(content["Date"], "%a %b %d %H:%M:%S %z %Y")
+                content["Date"] = content["Date"].strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                content["Date"] = datetime.fromisoformat(content["Date"])
                 tweets_content.append(content)
                 return tweets_content
             except requests.JSONDecodeError:
