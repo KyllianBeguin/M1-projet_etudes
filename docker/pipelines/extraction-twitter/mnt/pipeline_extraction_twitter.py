@@ -60,9 +60,11 @@ class PipelineExtractionTwitter():
         # Perform the query
         links = search(
             self.__query
-            , num_results=10
+            , tld="co.in"
+            , num=10
+            , stop=20
+            , pause=2
         )
-
         # Initialize list of tweet id
         tweets_id = []
 
