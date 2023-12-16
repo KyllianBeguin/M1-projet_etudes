@@ -7,8 +7,8 @@ import logging
 
 # ==================================== RUN TESTS =======================================
 if __name__ == "__main__":
-    FORMAT = '%(asctime)s %(message)s'
-    logging.basicConfig(format=FORMAT)
+    FORMAT = '%(asctime)s [SENTIMENT] %(message)s'
+    logging.basicConfig(format=FORMAT, datefmt='%m/%d/%Y %I:%M:%S %p')
     logger = logging.getLogger('pipeline')
     logger.setLevel('INFO')
     logger.info("Started Sentiment analysis")
