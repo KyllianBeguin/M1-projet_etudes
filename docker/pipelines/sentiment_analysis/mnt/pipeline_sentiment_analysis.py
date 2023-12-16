@@ -127,17 +127,13 @@ class PipelineSentimentAnalysis():
         if self.__endPipeline:
             return False
 
-        # Abort Push if trying to push same tweet in collection
-        if BulkWriteError:
-            return False
-
         # Move to processed data collection
         collection_processed = self.__accessProcessedCollection()
 
         # Remove Tweet id
         for tweet in processed_tweets:
             del tweet['Twitter_id']
-
+        
         # Push processed tweets in Mongo
         self.__pushTweetsCollection(collection_processed, processed_tweets)
 
